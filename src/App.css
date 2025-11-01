@@ -2,6 +2,14 @@
   text-align: center;
 }
 
+.mantine-Notifications-root {
+  position: fixed !important;
+  top: 20px !important;
+  left: 50% !important;
+  transform: translateX(-50%);
+  z-index: 9999 !important;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
