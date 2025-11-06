@@ -34,21 +34,6 @@ const links = [
     url: "/manager/employees",
     icon: <IconUsers stroke={1.5} />,
   },
-  {
-    name: "Departments",
-    url: "/manager/departments",
-    icon: <IconBuildingSkyscraper stroke={1.5} />,
-  },
-  {
-    name: "View Leaves",
-    url: "/manager/view-leaves",
-    icon: <IconCalendarSearch stroke={1.5} />,
-  },
-  {
-    name: "Charts",
-    url: "/manager/charts",
-    icon: <IconChartPie4 stroke={1.5} />,
-  },
 ];
 
 const Sidebar = () => {

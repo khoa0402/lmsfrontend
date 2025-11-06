@@ -76,13 +76,13 @@ const LeaveRequest = () => {
 
   const getSeverity = (status: any) => {
     switch (status) {
-      case "CANCELLED":
+      case "REJECTED":
         return "danger";
 
-      case "COMPLETED":
+      case "APPROVED":
         return "success";
 
-      case "SCHEDULED":
+      case "PENDING":
         return "info";
 
       default:
@@ -143,6 +143,7 @@ const LeaveRequest = () => {
       fromDate: new Date(),
       toDate: new Date(),
       leaveType: "",
+      reason: "",
     },
 
     validate: {
@@ -151,6 +152,7 @@ const LeaveRequest = () => {
       toDate: (value: any) => (!value ? "To Date is required" : undefined),
       leaveType: (value: any) =>
         !value ? "Leave Type is required" : undefined,
+      reason: (value: any) => (!value ? "Reason is required" : undefined),
     },
   });
 
@@ -234,9 +236,9 @@ const LeaveRequest = () => {
   const actionBodyTemplate = (rowData: any) => {
     return (
       <div className="flex gap-2">
-        <ActionIcon onClick={() => navigate("" + rowData.id)}>
+        {/* <ActionIcon onClick={() => navigate("" + rowData.id)}>
           <IconEdit size={20} stroke={1.5} />
-        </ActionIcon>
+        </ActionIcon> */}
         <ActionIcon color="red" onClick={() => handleDelete(rowData)}>
           <IconTrash size={20} stroke={1.5} />
         </ActionIcon>
@@ -393,6 +395,14 @@ const LeaveRequest = () => {
           filter
           filterPlaceholder="Search by name"
           style={{ minWidth: "14rem" }}
+        />
+        <Column
+          field="reason"
+          header="Reason"
+          sortable
+          filter
+          filterPlaceholder="Search by reason"
+          style={{ minWidth: "16rem" }}
         />
         <Column
           field="status"

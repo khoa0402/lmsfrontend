@@ -16,6 +16,7 @@ import {
   Modal,
   SegmentedControl,
   Select,
+  Textarea,
   TextInput,
 } from "@mantine/core";
 import { IconEdit, IconPlus, IconSearch, IconTrash } from "@tabler/icons-react";
@@ -39,6 +40,7 @@ import { modals } from "@mantine/modals";
 import { Text } from "@mantine/core";
 import "primereact/resources/themes/lara-light-blue/theme.css";
 import { Toolbar } from "primereact/toolbar";
+import { getEmployee } from "../../../Service/EmployeeProfileService";
 
 const LeaveRequest = () => {
   const [opened, { open, close }] = useDisclosure(false);
@@ -47,8 +49,8 @@ const LeaveRequest = () => {
   const [managers, setManagers] = useState<any[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
   const user = useSelector((state: any) => state.user);
-  const [selectedCustomers, setSelectedCustomers] = useState<any[]>([]);
   console.log("User from Redux:", user);
+  const [selectedCustomers, setSelectedCustomers] = useState<any[]>([]);
 
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -66,13 +68,13 @@ const LeaveRequest = () => {
 
   const getSeverity = (status: any) => {
     switch (status) {
-      case "CANCELLED":
+      case "REJECTED":
         return "danger";
 
-      case "COMPLETED":
+      case "APPROVED":
         return "success";
 
-      case "SCHEDULED":
+      case "PENDING":
         return "info";
 
       default:
@@ -83,6 +85,7 @@ const LeaveRequest = () => {
   const fetchLeaveRequests = () => {
     getLeaveRequestByEmployee(user.profileId)
       .then((data) => {
+        console.log("Leave request API data:", data);
         setLeaveRequests(getCustomers(data));
       })
       .catch((error) => {
@@ -94,12 +97,20 @@ const LeaveRequest = () => {
   useEffect(() => {
     fetchLeaveRequests();
     getManagerDropdowns()
-      .then((data) => {
-        console.log(data);
+      .then(async (data) => {
+        let currentManagerId: string | number | null = null;
+
+        // Lấy thông tin employee của user để biết managerId
+        const employee = await getEmployee(user.profileId);
+        currentManagerId = employee.managerId;
+
         setManagers(
           data.map((manager: any) => ({
-            value: "" + manager.id,
-            label: manager.name,
+            value: manager.id.toString(),
+            label:
+              manager.id.toString() === currentManagerId?.toString()
+                ? `${manager.name} (Your Manager)`
+                : manager.name,
           }))
         );
       })
@@ -133,6 +144,7 @@ const LeaveRequest = () => {
       fromDate: new Date(),
       toDate: new Date(),
       leaveType: "",
+      reason: "",
     },
 
     validate: {
@@ -141,6 +153,7 @@ const LeaveRequest = () => {
       toDate: (value: any) => (!value ? "To Date is required" : undefined),
       leaveType: (value: any) =>
         !value ? "Leave Type is required" : undefined,
+      reason: (value: any) => (!value ? "Reason is required" : undefined),
     },
   });
 
@@ -167,52 +180,57 @@ const LeaveRequest = () => {
     );
   };
 
-  const handleDelete = (rowData: any) => {
-    modals.openConfirmModal({
-      title: <span className="text-xl font-semibold">Are you sure</span>,
-      centered: true,
-      children: (
-        <Text size="sm">
-          Are you sure you want to cancel this leave request? This action cannot
-          be undone.
-        </Text>
-      ),
-      labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: () => {
-        cancelLeaveRequest(rowData.id)
-          .then(() => {
-            successNotification("Leave request cancelled successfully.");
-            fetchLeaveRequests();
-          })
-          .catch((error) => {
-            errorNotification(
-              error?.response?.data?.errorMessage ||
-                "Failed to cancel leave request."
-            );
-          });
-      },
-    });
-  };
+  // const handleDelete = (rowData: any) => {
+  //   modals.openConfirmModal({
+  //     title: <span className="text-xl font-semibold">Are you sure</span>,
+  //     centered: true,
+  //     children: (
+  //       <Text size="sm">
+  //         Are you sure you want to cancel this leave request? This action cannot
+  //         be undone.
+  //       </Text>
+  //     ),
+  //     labels: { confirm: "Confirm", cancel: "Cancel" },
+  //     onConfirm: () => {
+  //       cancelLeaveRequest(rowData.id)
+  //         .then(() => {
+  //           successNotification("Leave request cancelled successfully.");
+  //           fetchLeaveRequests();
+  //         })
+  //         .catch((error) => {
+  //           errorNotification(
+  //             error?.response?.data?.errorMessage ||
+  //               "Failed to cancel leave request."
+  //           );
+  //         });
+  //     },
+  //   });
+  // };
 
-  const actionBodyTemplate = (rowData: any) => {
-    return (
-      <div className="flex gap-2">
-        <ActionIcon>
-          <IconEdit size={20} stroke={1.5} />
-        </ActionIcon>
-        <ActionIcon color="red" onClick={() => handleDelete(rowData)}>
-          <IconTrash size={20} stroke={1.5} />
-        </ActionIcon>
-      </div>
-    );
-  };
+  // const actionBodyTemplate = (rowData: any) => {
+  //   return (
+  //     <div className="flex gap-2">
+  //       <ActionIcon>
+  //         <IconEdit size={20} stroke={1.5} />
+  //       </ActionIcon>
+  //       <ActionIcon color="red" onClick={() => handleDelete(rowData)}>
+  //         <IconTrash size={20} stroke={1.5} />
+  //       </ActionIcon>
+  //     </div>
+  //   );
+  // };
 
   const header = renderHeader();
 
   const handleSubmit = (values: any) => {
-    console.log("Schedule Leave Request with values:", values);
+    const payload = {
+      ...values,
+      fromDate: new Date(values.fromDate).toISOString(),
+      toDate: new Date(values.toDate).toISOString(),
+    };
+    console.log("Schedule Leave Request with values:", payload);
     setLoading(true);
-    scheduleLeaveRequest(values)
+    scheduleLeaveRequest(payload)
       .then((data) => {
         close();
         form.reset();
@@ -356,6 +374,14 @@ const LeaveRequest = () => {
           style={{ minWidth: "14rem" }}
         />
         <Column
+          field="reason"
+          header="Reason"
+          sortable
+          filter
+          filterPlaceholder="Search by reason"
+          style={{ minWidth: "16rem" }}
+        />
+        <Column
           field="status"
           header="Status"
           sortable
@@ -364,11 +390,12 @@ const LeaveRequest = () => {
           body={statusBodyTemplate}
           filter
         />
-        <Column
+
+        {/* <Column
           headerStyle={{ width: "5rem", textAlign: "center" }}
           bodyStyle={{ textAlign: "center", overflow: "visible" }}
           body={actionBodyTemplate}
-        />
+        /> */}
       </DataTable>
       <Modal
         opened={opened}
@@ -417,6 +444,14 @@ const LeaveRequest = () => {
             data={leaveTypes}
             label="Leave Type"
             placeholder="Select Leave Type"
+          />
+          <Textarea
+            {...form.getInputProps("reason")}
+            withAsterisk
+            label="Reason"
+            placeholder="Enter reason for leave"
+            autosize
+            minRows={2}
           />
           <Button type="submit" variant="filled" fullWidth>
             Submit

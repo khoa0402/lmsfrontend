@@ -24,12 +24,24 @@ import {
   getEmployee,
   updateEmployee,
 } from "../../../Service/EmployeeProfileService";
+import { getLeaveBalanceByEmployeeAndYear } from "../../../Service/LeaveBalanceService";
 
 const Profile = () => {
   const user = useSelector((state: any) => state.user);
   const [opened, { open, close }] = useDisclosure(false);
   const [editMode, setEdit] = useState(false);
   const [profile, setProfile] = useState<any>({});
+  const [leaveBalance, setLeaveBalance] = useState<any>({});
+  const [year, setYear] = useState<number>(new Date().getFullYear());
+  console.log("User from redux:", leaveBalance);
+
+  useEffect(() => {
+    if (!user?.profileId) return;
+    getLeaveBalanceByEmployeeAndYear(user.profileId, year)
+      .then((data) => setLeaveBalance(data))
+      .catch((err) => console.error("Error fetching leave balance:", err));
+  }, [user?.profileId, year]);
+
   useEffect(() => {
     getEmployee(user.profileId)
       .then((data) => {
@@ -88,11 +100,6 @@ const Profile = () => {
               size={120}
               alt="it's me"
             />
-            {editMode && (
-              <Button onClick={open} variant="filled">
-                Upload
-              </Button>
-            )}
           </div>
           <div>
             <div className="text-2xl font-bold text-neutral-900">
@@ -212,25 +219,72 @@ const Profile = () => {
             </Table.Tr>
             <Table.Tr>
               <Table.Td className="font-medium text-lg">Role:</Table.Td>
-              {editMode ? (
-                <Table.Td className="text-lg">
-                  <TextInput placeholder="Role" />
-                </Table.Td>
-              ) : (
-                <Table.Td className="text-lg">{user.role}</Table.Td>
-              )}
+              <Table.Td className="text-lg">{user.role}</Table.Td>
             </Table.Tr>
           </Table.Tbody>
         </Table>
       </div>
-      <Modal
-        opened={opened}
-        onClose={close}
-        title={
-          <span className="text-lg font-bold">Upload Profile Picture</span>
-        }
-        centered
-      ></Modal>
+      <Divider my="xl" />
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <div className="text-2xl font-bold text-neutral-900">
+            Leave Balance Summary
+          </div>
+          <Select
+            label="Select Year"
+            value={year.toString()}
+            onChange={(val) => setYear(Number(val))}
+            data={["2023", "2024", "2025"]}
+            className="w-40"
+          />
+        </div>
+
+        <Table
+          striped
+          stripedColor="gray"
+          verticalSpacing="sm"
+          withColumnBorders={false}
+        >
+          <Table.Tbody className="[&>tr]:!mb-3 [&_td]:!w-1/2">
+            <Table.Tr>
+              <Table.Td className="font-medium text-lg">
+                Annual Leave Entitlement:
+              </Table.Td>
+              <Table.Td className="text-lg">
+                {leaveBalance.totalDefaultDays ?? "-"}
+              </Table.Td>
+            </Table.Tr>
+            <Table.Tr>
+              <Table.Td className="font-medium text-lg">Carried Over:</Table.Td>
+              <Table.Td className="text-lg">
+                {leaveBalance.carriedOverDays ?? "-"}
+              </Table.Td>
+            </Table.Tr>
+            <Table.Tr>
+              <Table.Td className="font-medium text-lg">Leave Taken:</Table.Td>
+              <Table.Td className="text-lg">
+                {leaveBalance.usedDays ?? "-"}
+              </Table.Td>
+            </Table.Tr>
+            <Table.Tr>
+              <Table.Td className="font-medium text-lg">
+                Pending Approval:
+              </Table.Td>
+              <Table.Td className="text-lg">
+                {leaveBalance.pendingDays ?? "-"}
+              </Table.Td>
+            </Table.Tr>
+            <Table.Tr>
+              <Table.Td className="font-medium text-lg">
+                Remaining Balance:
+              </Table.Td>
+              <Table.Td className="text-lg">
+                {leaveBalance.remainingDays ?? "-"}
+              </Table.Td>
+            </Table.Tr>
+          </Table.Tbody>
+        </Table>
+      </div>
     </div>
   );
 };

@@ -27,4 +27,28 @@ const getManagerDropdowns = async () => {
     });
 };
 
-export { getManager, updateManager, getManagerDropdowns };
+const getAllManagers = async () => {
+  return axiosInstance
+    .get("/profile/manager/getAll")
+    .then((response: any) => response.data)
+    .catch((error: any) => {
+      throw error;
+    });
+};
+
+const getManagerByEmployee = async (employeeId: any) => {
+  return axiosInstance
+    .get("/profile/manager/getByEmployee/" + employeeId)
+    .then((response: any) => response.data)
+    .catch((error: any) => {
+      throw error;
+    });
+};
+
+export {
+  getManager,
+  updateManager,
+  getManagerDropdowns,
+  getAllManagers,
+  getManagerByEmployee,
+};

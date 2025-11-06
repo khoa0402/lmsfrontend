@@ -14,6 +14,7 @@ import ManagerLeaveRequestPage from "../Pages/Manager/ManagerLeaveRequestPage";
 import ManagerLeaveRequestDetailsPage from "../Pages/Manager/ManagerLeaveRequestDetailsPage";
 import ManagerDashBoardPage from "../Pages/Manager/ManagerDashBoardPage";
 import ManagerEmployeePage from "../Pages/Manager/ManagerEmployeePage";
+import EmployeeManagerPage from "../Pages/Employee/EmployeeManagerPage";
 
 const AppRoutes = () => {
   return (
@@ -53,7 +54,7 @@ const AppRoutes = () => {
           <Route path="dashboard" element={<Random />} />
           <Route path="profile" element={<EmployeeProfilePage />} />
           <Route path="leave-requests" element={<EmployeeLeaveRequestPage />} />
-          <Route path="view-leaves" element={<Random />} />
+          <Route path="managers" element={<EmployeeManagerPage />} />
         </Route>
         <Route
           path="/manager"
@@ -71,7 +72,6 @@ const AppRoutes = () => {
             element={<ManagerLeaveRequestDetailsPage />}
           />
           <Route path="employees" element={<ManagerEmployeePage />} />
-          <Route path="view-leaves" element={<Random />} />
         </Route>
       </Routes>
     </BrowserRouter>

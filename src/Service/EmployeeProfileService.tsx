@@ -27,4 +27,13 @@ const getAllEmployees = async () => {
     });
 };
 
-export { getEmployee, updateEmployee, getAllEmployees };
+const getEmployeesByManager = async (managerId: any) => {
+  return axiosInstance
+    .get("/profile/employee/getByManager/" + managerId)
+    .then((response: any) => response.data)
+    .catch((error: any) => {
+      throw error;
+    });
+};
+
+export { getEmployee, updateEmployee, getAllEmployees, getEmployeesByManager };

@@ -88,11 +88,6 @@ const Profile = () => {
               size={120}
               alt="it's me"
             />
-            {editMode && (
-              <Button onClick={open} variant="filled">
-                Upload
-              </Button>
-            )}
           </div>
           <div>
             <div className="text-2xl font-bold text-neutral-900">
@@ -212,25 +207,11 @@ const Profile = () => {
             </Table.Tr>
             <Table.Tr>
               <Table.Td className="font-medium text-lg">Role:</Table.Td>
-              {editMode ? (
-                <Table.Td className="text-lg">
-                  <TextInput placeholder="Role" />
-                </Table.Td>
-              ) : (
-                <Table.Td className="text-lg">{user.role}</Table.Td>
-              )}
+              <Table.Td className="text-lg">{user.role}</Table.Td>
             </Table.Tr>
           </Table.Tbody>
         </Table>
       </div>
-      <Modal
-        opened={opened}
-        onClose={close}
-        title={
-          <span className="text-lg font-bold">Upload Profile Picture</span>
-        }
-        centered
-      ></Modal>
     </div>
   );
 };

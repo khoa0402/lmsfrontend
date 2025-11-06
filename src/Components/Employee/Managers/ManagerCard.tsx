@@ -11,7 +11,7 @@ interface EmployeeCardProps {
   department: string;
 }
 
-const EmployeeCard: React.FC<EmployeeCardProps> = ({
+const ManagerCard: React.FC<EmployeeCardProps> = ({
   name,
   email,
   dob,
@@ -76,4 +76,4 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({
   );
 };
 
-export default EmployeeCard;
+export default ManagerCard;

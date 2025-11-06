@@ -15,11 +15,6 @@ import { NavLink } from "react-router-dom";
 
 const links = [
   {
-    name: "Dashboard",
-    url: "/employee/dashboard",
-    icon: <IconLayoutDashboard stroke={1.5} />,
-  },
-  {
     name: "Profile",
     url: "/employee/profile",
     icon: <IconUser stroke={1.5} />,
@@ -30,25 +25,9 @@ const links = [
     icon: <IconClipboardText stroke={1.5} />,
   },
   {
-    name: "Departments",
-    url: "/employee/departments",
-    icon: <IconBuildingSkyscraper stroke={1.5} />,
-  },
-
-  {
-    name: "Employees",
-    url: "/employee/employees",
+    name: "Managers",
+    url: "/employee/managers",
     icon: <IconUsers stroke={1.5} />,
-  },
-  {
-    name: "View Leaves",
-    url: "/employee/view-leaves",
-    icon: <IconCalendarSearch stroke={1.5} />,
-  },
-  {
-    name: "Charts",
-    url: "/employee/charts",
-    icon: <IconChartPie4 stroke={1.5} />,
   },
 ];
 
