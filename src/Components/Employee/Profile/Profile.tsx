@@ -105,7 +105,11 @@ const Profile = () => {
 
         <Divider mb="md" />
 
-        <Table striped highlightOnHover verticalSpacing="sm">
+        <Table
+          highlightOnHover
+          verticalSpacing="sm"
+          className="[&>tbody>tr:nth-child(odd)]:bg-gray-200 [&>tbody>tr:nth-child(even)]:bg-white [&>tbody>tr:hover]:bg-indigo-100 transition-colors duration-200"
+        >
           <colgroup>
             <col style={{ width: "55%" }} /> {/* Label nhỏ hơn */}
             <col style={{ width: "45%" }} /> {/* Value rộng hơn */}
@@ -154,7 +158,12 @@ const Profile = () => {
 
         <Divider mb="md" />
 
-        <Table striped highlightOnHover verticalSpacing="sm">
+        <Table
+          striped
+          highlightOnHover
+          verticalSpacing="sm"
+          className="[&>tbody>tr:nth-child(odd)]:bg-gray-200 [&>tbody>tr:nth-child(even]:bg-white [&>tbody>tr:hover]:bg-indigo-100 transition-colors duration-200"
+        >
           <colgroup>
             <col style={{ width: "55%" }} />
             <col style={{ width: "45%" }} />

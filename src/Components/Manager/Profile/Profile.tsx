@@ -9,7 +9,7 @@ import {
   Badge,
   ScrollArea,
 } from "@mantine/core";
-import { IconEdit } from "@tabler/icons-react";
+import { IconEdit, IconUser } from "@tabler/icons-react";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getManager } from "../../../Service/ManagerProfileService";
@@ -30,7 +30,7 @@ const Profile = () => {
       <Card
         shadow="sm"
         radius="lg"
-        className="p-8 mb-10 bg-white border border-gray-100"
+        className="p-8 mb-5 bg-white border border-gray-100"
       >
         <Group justify="space-between" align="center">
           <Group gap="lg">
@@ -69,21 +69,29 @@ const Profile = () => {
 
       {/* Personal Info */}
       <Card
-        shadow="sm"
+        shadow="md"
         radius="lg"
         className="p-8 bg-white border border-gray-100"
       >
-        <Text size="xl" fw={700} mb="md" className="text-gray-900">
-          Personal Information
-        </Text>
+        <Group gap="xs" className="mb-4">
+          <IconUser size={24} className="text-blue-600" />
+          <h2 className="text-xl font-semibold text-gray-800">
+            Personal Information
+          </h2>
+        </Group>
 
         <Divider my="sm" />
 
         <ScrollArea>
           <Table
-            verticalSpacing="md"
+            verticalSpacing="sm"
             highlightOnHover
             withColumnBorders={false}
+            className="rounded-lg overflow-hidden 
+             [&>tbody>tr:nth-child(odd)]:bg-gray-200 
+             [&>tbody>tr:nth-child(even)]:bg-white 
+             [&>tbody>tr:hover]:bg-indigo-100 
+             transition-colors duration-200"
           >
             <colgroup>
               <col style={{ width: "55%" }} />

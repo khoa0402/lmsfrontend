@@ -409,7 +409,7 @@ const LeaveRequest = () => {
         globalFilterFields={["managerName", "leaveType", "status"]}
         emptyMessage="No leave request found."
         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-        className="text-[15px] shadow-sm [&_.p-datatable-thead>tr>th]:bg-slate-300 [&_.p-datatable-tbody>tr:nth-child(even)]:bg-slate-200 
+        className="text-[15px] shadow-sm rounded-xl overflow-hidden ml-3 mr-3 [&_.p-datatable-thead>tr>th]:bg-slate-300 [&_.p-datatable-tbody>tr:nth-child(even)]:bg-slate-200 
              [&_.p-datatable-tbody>tr:nth-child(odd)]:bg-white 
              [&_.p-datatable-tbody>tr:hover]:bg-indigo-200"
       >

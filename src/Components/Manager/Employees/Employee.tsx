@@ -114,6 +114,7 @@ const Employee = () => {
       style={{
         width: "13rem",
         height: "3rem",
+        marginTop: "-20px",
       }}
     />
   );
