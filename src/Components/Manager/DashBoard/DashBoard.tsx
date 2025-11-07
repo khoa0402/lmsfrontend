@@ -35,6 +35,8 @@ const Dashboard = () => {
           getLeaveBalanceDashboard(),
           getSummaryDashboard(),
         ]);
+        console.log("Leave Balance Data:", leaveBalance);
+        console.log("Summary Data:", summary);
         setData({ leaveBalance, summary });
       } catch (error) {
         console.error("Dashboard API error:", error);
@@ -163,13 +165,13 @@ const Dashboard = () => {
 
       {/* Charts */}
       <Grid gutter="md" mb="lg" align="stretch">
-        <Grid.Col span={{ base: 12, md: 8 }}>
+        <Grid.Col span={{ base: 12, md: 7.5 }}>
           <Card shadow="xs" radius="md" p="md" withBorder>
             <LeaveBarChart data={summary.trendsByMonth} />
           </Card>
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, md: 4 }}>
+        <Grid.Col span={{ base: 12, md: 4.5 }}>
           <Card
             shadow="xs"
             radius="md"
