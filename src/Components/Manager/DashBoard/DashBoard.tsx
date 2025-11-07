@@ -14,32 +14,35 @@ import {
   IconCalendarStats,
   IconCalendarMonth,
 } from "@tabler/icons-react";
-import { ManagerDashboard } from "./DashboardType";
-import { getManagerDashboard } from "../../../Service/DashboardService";
+import {
+  getLeaveBalanceDashboard,
+  getSummaryDashboard,
+} from "../../../Service/DashboardService";
+import { DashboardData } from "./DashboardType";
 import LeaveBarChart from "./LeaveBarChart";
 import LeavePieChart from "./LeavePieChart";
 import { EmployeeLeaveTable } from "./EmployeeLeaveTable";
 
 const Dashboard = () => {
-  const [data, setData] = useState<ManagerDashboard | null>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const user = useSelector((state: any) => state.user);
-  console.log("User from Redux:", user);
-  const managerId = user?.id;
 
   useEffect(() => {
-    if (!managerId) return;
     (async () => {
       try {
-        const res = await getManagerDashboard(managerId);
-        setData(res);
+        const [leaveBalance, summary] = await Promise.all([
+          getLeaveBalanceDashboard(),
+          getSummaryDashboard(),
+        ]);
+        setData({ leaveBalance, summary });
       } catch (error) {
         console.error("Dashboard API error:", error);
       } finally {
         setLoading(false);
       }
     })();
-  }, [managerId]);
+  }, []);
 
   if (loading)
     return (
@@ -50,84 +53,107 @@ const Dashboard = () => {
 
   if (!data) return <Text ta="center">Error loading dashboard</Text>;
 
+  const { leaveBalance, summary } = data;
+
   return (
     <div
       style={{ padding: 24, backgroundColor: "#f9fafb", minHeight: "100vh" }}
     >
-      {/* ================= Thẻ tổng hợp ================= */}
+      {/* Summary Cards */}
       <Grid gutter="md" mb="lg">
+        {/* Team Members */}
         <Grid.Col span={{ base: 12, sm: 4 }}>
           <Card
-            shadow="md"
+            shadow="sm"
             radius="lg"
             p="lg"
             style={{
-              background: "linear-gradient(135deg, #4dabf7 0%, #228be6 100%)",
-              color: "white",
+              background: "linear-gradient(135deg, #e7f5ff 0%, #d0ebff 100%)",
+              color: "#0b7285", // chữ đậm hơn
             }}
           >
             <Group align="center" justify="space-between">
-              <ThemeIcon size={48} radius="md" variant="light" color="white">
+              <ThemeIcon
+                size={48}
+                radius="md"
+                variant="light"
+                color="blue"
+                style={{ backgroundColor: "#a5d8ff" }}
+              >
                 <IconUsers size={32} />
               </ThemeIcon>
               <Stack gap={0}>
-                <Text size="sm" opacity={0.9}>
-                  Total Employees
+                <Text size="sm" fw={600}>
+                  Team Members
                 </Text>
-                <Text fz="xl" fw={700}>
-                  {data.totalEmployees}
+                <Text fz="xl" fw={800}>
+                  {leaveBalance.length}
                 </Text>
               </Stack>
             </Group>
           </Card>
         </Grid.Col>
 
+        {/* Total Leave Requests */}
         <Grid.Col span={{ base: 12, sm: 4 }}>
           <Card
-            shadow="md"
+            shadow="sm"
             radius="lg"
             p="lg"
             style={{
-              background: "linear-gradient(135deg, #40c057 0%, #2b8a3e 100%)",
-              color: "white",
+              background: "linear-gradient(135deg, #ebfbee 0%, #d3f9d8 100%)",
+              color: "#2b8a3e",
             }}
           >
             <Group align="center" justify="space-between">
-              <ThemeIcon size={48} radius="md" variant="light" color="white">
+              <ThemeIcon
+                size={48}
+                radius="md"
+                variant="light"
+                color="green"
+                style={{ backgroundColor: "#b2f2bb" }}
+              >
                 <IconCalendarStats size={32} />
               </ThemeIcon>
               <Stack gap={0}>
-                <Text size="sm" opacity={0.9}>
+                <Text size="sm" fw={600}>
                   Total Leave Requests
                 </Text>
-                <Text fz="xl" fw={700}>
-                  {data.totalLeaveRequests}
+                <Text fz="xl" fw={800}>
+                  {summary.totalRequests}
                 </Text>
               </Stack>
             </Group>
           </Card>
         </Grid.Col>
 
+        {/* Total Days Taken */}
         <Grid.Col span={{ base: 12, sm: 4 }}>
           <Card
-            shadow="md"
+            shadow="sm"
             radius="lg"
             p="lg"
             style={{
-              background: "linear-gradient(135deg, #fcc419 0%, #f08c00 100%)",
-              color: "white",
+              background: "linear-gradient(135deg, #fff9db 0%, #fff3bf 100%)",
+              color: "#ad6800", // vàng đậm hơn
             }}
           >
             <Group align="center" justify="space-between">
-              <ThemeIcon size={48} radius="md" variant="light" color="white">
+              <ThemeIcon
+                size={48}
+                radius="md"
+                variant="light"
+                color="yellow"
+                style={{ backgroundColor: "#ffe066" }}
+              >
                 <IconCalendarMonth size={32} />
               </ThemeIcon>
               <Stack gap={0}>
-                <Text size="sm" opacity={0.9}>
-                  Leave Requests This Month
+                <Text size="sm" fw={600}>
+                  Total Days Taken
                 </Text>
-                <Text fz="xl" fw={700}>
-                  {data.leaveRequestsThisMonth}
+                <Text fz="xl" fw={800}>
+                  {summary.totalDaysTaken}
                 </Text>
               </Stack>
             </Group>
@@ -135,30 +161,30 @@ const Dashboard = () => {
         </Grid.Col>
       </Grid>
 
-      {/* ================= Biểu đồ ================= */}
+      {/* Charts */}
       <Grid gutter="md" mb="lg" align="stretch">
         <Grid.Col span={{ base: 12, md: 8 }}>
-          <Card shadow="sm" radius="md" p="sm" withBorder>
-            <LeaveBarChart data={data.leaveTypeByMonth} />
+          <Card shadow="xs" radius="md" p="md" withBorder>
+            <LeaveBarChart data={summary.trendsByMonth} />
           </Card>
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, md: 4 }}>
           <Card
-            shadow="sm"
+            shadow="xs"
             radius="md"
-            p="sm"
+            p="md"
             withBorder
             style={{ height: "100%" }}
           >
-            <LeavePieChart data={data.leaveStatusSummary} />
+            <LeavePieChart data={summary.countByLeaveType} />
           </Card>
         </Grid.Col>
       </Grid>
 
-      {/* ================= Bảng dữ liệu ================= */}
-      <Card shadow="sm" radius="md" p="md" withBorder>
-        <EmployeeLeaveTable data={data.employeeLeaveSummary} />
+      {/* Employee Leave Table */}
+      <Card shadow="xs" radius="md" p="md" withBorder>
+        <EmployeeLeaveTable data={leaveBalance} />
       </Card>
     </div>
   );

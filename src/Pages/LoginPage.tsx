@@ -35,9 +35,22 @@ const LoginPage = () => {
     setLoading(true);
     loginUser(values)
       .then((_data) => {
+        console.log("✅ Response from backend:", _data);
+
+        const token = _data?.accessToken;
+        const user = _data?.user;
+
+        if (!token) throw new Error("No accessToken found in response");
+        if (!user) throw new Error("No user data found in response");
+
         successNotification("Login successfully.");
-        dispatch(setJwt(_data));
-        dispatch(setUser(jwtDecode(_data)));
+
+        // Lưu token và user vào Redux
+        dispatch(setJwt(token));
+        dispatch(setUser(user));
+
+        console.log("✅ User info:", user);
+        console.log("✅ Token:", token);
       })
       .catch((error) => {
         errorNotification(error?.response?.data?.errorMessage);
@@ -46,7 +59,7 @@ const LoginPage = () => {
   };
   return (
     <div
-      style={{ background: 'url("/background.jpg")' }}
+      style={{ background: 'url("/background2.jpg")' }}
       className="w-screen h-screen !bg-cover !bg-center !bg-no-repeat flex items-center justify-end" //important(!)
     >
       <div className="w-[450px] px-8 py-5 mr-10 backdrop-blur-xl bg-zinc-600/20 rounded-xl">
@@ -58,13 +71,19 @@ const LoginPage = () => {
           onSubmit={form.onSubmit(handleSubmit)}
           className="flex flex-col gap-4"
         >
-          <div className="self-center font-extrabold text-3xl text-zinc-800">
+          <div className="self-center font-extrabold text-3xl text-zinc-300">
             Login
           </div>
           <TextInput
             variant="filled"
             size="md"
             label="Email"
+            styles={{
+              label: {
+                color: "white",
+                fontWeight: 400,
+              },
+            }}
             withAsterisk
             placeholder="Enter the email"
             {...form.getInputProps("email")}
@@ -73,6 +92,12 @@ const LoginPage = () => {
             variant="filled"
             size="md"
             label="Password"
+            styles={{
+              label: {
+                color: "white",
+                fontWeight: 400,
+              },
+            }}
             withAsterisk
             placeholder="Enter the password"
             {...form.getInputProps("password")}

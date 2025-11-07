@@ -1,8 +1,13 @@
 import { Card, Text, Group, Badge } from "@mantine/core";
 import { PieChart } from "@mantine/charts";
 
+interface LeaveType {
+  type: string;
+  days: number;
+}
+
 interface LeavePieChartProps {
-  data: Record<string, number>;
+  data: LeaveType[];
 }
 
 const LeavePieChart = ({ data }: LeavePieChartProps) => {
@@ -17,25 +22,23 @@ const LeavePieChart = ({ data }: LeavePieChartProps) => {
     "indigo.6",
   ];
 
-  const chartData = Object.entries(data).map(([name, value], index) => ({
-    name,
-    value,
+  const chartData = data.map((item, index) => ({
+    name: item.type,
+    value: item.days,
     color: colors[index % colors.length],
   }));
 
   return (
     <Card shadow="xs" radius="md" p="lg" withBorder style={{ maxWidth: 320 }}>
       <Text fw={500} mb="xs" ta="center" size="sm">
-        Leave Request Status Distribution
+        Leave Type Distribution
       </Text>
-
       <div
         style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}
       >
         <PieChart h={200} data={chartData} withLabels withTooltip />
       </div>
 
-      {/* 🔽 Legend thu gọn */}
       <Group justify="center" mt={0} gap={4} wrap="wrap">
         {chartData.map((item) => (
           <Badge key={item.name} color={item.color} variant="light" size="sm">

@@ -1,8 +1,8 @@
 import axiosInstance from "../Interceptor/AxiosInterceptor";
 
-const getEmployee = async (id: any) => {
+const getEmployee = async () => {
   return axiosInstance
-    .get("/profile/employee/get/" + id)
+    .get("/auth/me")
     .then((response: any) => response.data)
     .catch((error: any) => {
       throw error;
@@ -20,7 +20,7 @@ const updateEmployee = async (employee: any) => {
 
 const getAllEmployees = async () => {
   return axiosInstance
-    .get("/profile/employee/getAll")
+    .get("/users")
     .then((response: any) => response.data)
     .catch((error: any) => {
       throw error;
@@ -29,7 +29,7 @@ const getAllEmployees = async () => {
 
 const getEmployeesByManager = async (managerId: any) => {
   return axiosInstance
-    .get("/profile/employee/getByManager/" + managerId)
+    .get("/users/" + managerId)
     .then((response: any) => response.data)
     .catch((error: any) => {
       throw error;

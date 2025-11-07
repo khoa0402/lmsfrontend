@@ -1,8 +1,8 @@
 import axiosInstance from "../Interceptor/AxiosInterceptor";
 
-const getManager = async (id: any) => {
+const getManager = async () => {
   return axiosInstance
-    .get("/profile/manager/get/" + id)
+    .get("/auth/me")
     .then((response: any) => response.data)
     .catch((error: any) => {
       throw error;

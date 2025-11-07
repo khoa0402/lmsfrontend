@@ -1,12 +1,25 @@
 import axiosInstance from "../Interceptor/AxiosInterceptor";
 
-const getManagerDashboard = async (managerId: any) => {
+const getLeaveBalanceDashboard = async () => {
   return axiosInstance
-    .get("/dashboard/" + managerId)
+    .get("/leave-balance/team")
     .then((response: any) => response.data)
     .catch((error: any) => {
       throw error;
     });
 };
 
-export { getManagerDashboard };
+const getSummaryDashboard = async (params?: {
+  departmentId?: string;
+  startDate?: string;
+  endDate?: string;
+}) => {
+  return axiosInstance
+    .get("/reports/summary", { params })
+    .then((response: any) => response.data)
+    .catch((error: any) => {
+      throw error;
+    });
+};
+
+export { getLeaveBalanceDashboard, getSummaryDashboard };

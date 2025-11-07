@@ -1,17 +1,24 @@
-export interface EmployeeLeaveSummary {
-  employeeId: number;
-  employeeName: string;
-  usedDays: number;
-  remainingDays: number;
-  carriedOverDays: number;
+export interface TeamLeaveBalance {
+  userId: string;
+  name: string;
+  remaining: number;
 }
 
-export interface ManagerDashboard {
-  managerId: number;
-  totalEmployees: number;
-  totalLeaveRequests: number;
-  leaveRequestsThisMonth: number;
-  leaveTypeByMonth: Record<number, Record<string, number>>;
-  leaveStatusSummary: Record<string, number>;
-  employeeLeaveSummary: EmployeeLeaveSummary[];
+export interface SummaryReport {
+  totalRequests: number;
+  totalDaysTaken: number;
+  trendsByMonth: {
+    month: number;
+    days: number;
+  }[];
+  countByLeaveType: {
+    type: string;
+    days: number;
+  }[];
+}
+
+// Gộp hai phần này cho Dashboard
+export interface DashboardData {
+  leaveBalance: TeamLeaveBalance[];
+  summary: SummaryReport;
 }

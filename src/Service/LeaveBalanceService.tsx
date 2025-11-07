@@ -1,12 +1,12 @@
 import axiosInstance from "../Interceptor/AxiosInterceptor";
 
-const getLeaveBalanceByEmployeeAndYear = async (employeeId: any, year: any) => {
+const getLeaveBalanceByEmployee = async () => {
   return axiosInstance
-    .get("/leave-balance/" + employeeId + "/" + year)
+    .get("/leave-balance/me")
     .then((response: any) => response.data)
     .catch((error: any) => {
       throw error;
     });
 };
 
-export { getLeaveBalanceByEmployeeAndYear };
+export { getLeaveBalanceByEmployee };

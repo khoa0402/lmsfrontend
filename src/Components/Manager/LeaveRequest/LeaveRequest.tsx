@@ -24,6 +24,7 @@ import {
   IconPlus,
   IconSearch,
   IconTrash,
+  IconX,
 } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import { getManagerDropdowns } from "../../../Service/ManagerProfileService";
@@ -36,11 +37,10 @@ import {
   successNotification,
 } from "../../../Utility/NotificationUtil";
 import {
-  cancelLeaveRequest,
-  completeLeaveRequest,
   getLeaveRequestByEmployee,
   getLeaveRequestByManager,
   scheduleLeaveRequest,
+  setStatusLeaveRequest,
 } from "../../../Service/LeaveRequestService";
 import { formatDateWithTime } from "../../../Utility/DateUtility";
 import { modals } from "@mantine/modals";
@@ -58,6 +58,7 @@ const LeaveRequest = () => {
   const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
   const user = useSelector((state: any) => state.user);
   const [selectedCustomers, setSelectedCustomers] = useState<any[]>([]);
+
   console.log("User from Redux:", user);
 
   const [filters, setFilters] = useState({
@@ -91,8 +92,9 @@ const LeaveRequest = () => {
   };
 
   const fetchLeaveRequests = () => {
-    getLeaveRequestByManager(user.profileId)
+    getLeaveRequestByManager()
       .then((data) => {
+        console.log("Leave request API data:", data);
         setLeaveRequests(getCustomers(data));
       })
       .catch((error) => {
@@ -116,7 +118,7 @@ const LeaveRequest = () => {
       .catch((error) => {
         console.error("Error fetching managers", error);
       });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const getCustomers = (data: any) => {
     return [...(data || [])].map((d) => {
@@ -140,18 +142,17 @@ const LeaveRequest = () => {
     initialValues: {
       employeeId: "",
       managerId: user.profileId,
-      fromDate: new Date(),
-      toDate: new Date(),
-      leaveType: "",
+      startDate: new Date(),
+      endDate: new Date(),
+      type: "",
       reason: "",
     },
 
     validate: {
       employeeId: (value: any) => (!value ? "Manager is required" : undefined),
-      fromDate: (value: any) => (!value ? "From Date is required" : undefined),
-      toDate: (value: any) => (!value ? "To Date is required" : undefined),
-      leaveType: (value: any) =>
-        !value ? "Leave Type is required" : undefined,
+      startDate: (value: any) => (!value ? "From Date is required" : undefined),
+      endDate: (value: any) => (!value ? "To Date is required" : undefined),
+      type: (value: any) => (!value ? "Leave Type is required" : undefined),
       reason: (value: any) => (!value ? "Reason is required" : undefined),
     },
   });
@@ -179,48 +180,47 @@ const LeaveRequest = () => {
     );
   };
 
-  const handleDelete = (rowData: any) => {
+  const handleReject = (rowData: any) => {
     modals.openConfirmModal({
       title: <span className="text-xl font-semibold">Are you sure</span>,
       centered: true,
       children: (
         <Text size="sm">
-          Are you sure you want to cancel this leave request? This action cannot
-          be undone.
+          Are you sure you want to reject this leave request?
         </Text>
       ),
       labels: { confirm: "Confirm", cancel: "Cancel" },
       onConfirm: () => {
-        cancelLeaveRequest(rowData.id)
+        setStatusLeaveRequest(rowData.id, "REJECTED")
           .then(() => {
-            successNotification("Leave request cancelled successfully.");
+            successNotification("Leave request rejected successfully.");
             fetchLeaveRequests();
           })
           .catch((error) => {
             errorNotification(
               error?.response?.data?.errorMessage ||
-                "Failed to cancel leave request."
+                "Failed to reject leave request."
             );
           });
       },
     });
   };
 
-  const handleComplete = (rowData: any) => {
+  const handleApprove = (rowData: any) => {
     modals.openConfirmModal({
       title: <span className="text-xl font-semibold">Confirm Completion</span>,
       centered: true,
       children: (
         <Text size="sm">
-          Are you sure you want to complete this leave request?
+          Are you sure you want to approve this leave request?
         </Text>
       ),
       labels: { confirm: "Confirm", cancel: "Cancel" },
       confirmProps: { color: "green" },
       onConfirm: () => {
-        completeLeaveRequest(rowData.id)
+        setStatusLeaveRequest(rowData.id, "APPROVED")
           .then(() => {
-            successNotification("Leave request completed successfully.");
+            successNotification("Leave request approved successfully.");
             fetchLeaveRequests();
           })
           .catch((error) => {
@@ -233,49 +233,101 @@ const LeaveRequest = () => {
     });
   };
 
-  const actionBodyTemplate = (rowData: any) => {
+  const ActionCell = ({ rowData, fetchLeaveRequests }: any) => {
+    const [comment, setComment] = useState("");
+
+    const handleAction = (status: string) => {
+      if (!status) return;
+      setStatusLeaveRequest(rowData.id, status, comment)
+        .then(() => {
+          successNotification(
+            `Leave request ${status.toLowerCase()} successfully.`
+          );
+          fetchLeaveRequests();
+        })
+        .catch((error) => {
+          errorNotification(
+            error?.response?.data?.errorMessage ||
+              `Failed to ${status.toLowerCase()} leave request.`
+          );
+        });
+    };
+
     return (
-      <div className="flex gap-2">
-        {/* <ActionIcon onClick={() => navigate("" + rowData.id)}>
-          <IconEdit size={20} stroke={1.5} />
-        </ActionIcon> */}
-        <ActionIcon color="red" onClick={() => handleDelete(rowData)}>
-          <IconTrash size={20} stroke={1.5} />
-        </ActionIcon>
-        <ActionIcon color="green" onClick={() => handleComplete(rowData)}>
-          <IconCheck size={20} stroke={1.5} />
-        </ActionIcon>
+      <div className="flex flex-col gap-2">
+        <TextInput
+          size="xs"
+          placeholder="Manager comment"
+          value={comment}
+          onChange={(e) => setComment(e.currentTarget.value)}
+        />
+        <div className="flex gap-1 justify-center">
+          <ActionIcon
+            color="green"
+            variant="filled"
+            onClick={() => handleAction("APPROVED")}
+          >
+            <IconCheck size={16} stroke={1.5} />
+          </ActionIcon>
+          <ActionIcon
+            color="red"
+            variant="filled"
+            onClick={() => handleAction("REJECTED")}
+          >
+            <IconX size={16} stroke={1.5} />
+          </ActionIcon>
+        </div>
       </div>
     );
   };
 
   const header = renderHeader();
 
-  const handleSubmit = (values: any) => {
-    console.log("Schedule Leave Request with values:", values);
-    setLoading(true);
-    scheduleLeaveRequest(values)
-      .then((data) => {
-        close();
-        form.reset();
-        successNotification("Leave request scheduled successfully.");
-        fetchLeaveRequests();
-      })
-      .catch((error) => {
-        errorNotification(
-          error?.response?.data?.errorMessage ||
-            "Failed to schedule leave request."
-        );
-      })
-      .finally(() => setLoading(false));
-  };
+  // const handleSubmit = (values: any) => {
+  //   console.log("Schedule Leave Request with values:", values);
+  //   setLoading(true);
+  //   scheduleLeaveRequest(values)
+  //     .then((data) => {
+  //       close();
+  //       form.reset();
+  //       successNotification("Leave request scheduled successfully.");
+  //       fetchLeaveRequests();
+  //     })
+  //     .catch((error) => {
+  //       errorNotification(
+  //         error?.response?.data?.errorMessage ||
+  //           "Failed to schedule leave request."
+  //       );
+  //     })
+  //     .finally(() => setLoading(false));
+  // };
 
   const timeTemplateFrom = (rowData: any) => {
-    return <span>{formatDateWithTime(rowData.fromDate)}</span>;
+    const date = new Date(rowData.startDate);
+    return (
+      <span>
+        {date.toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })}
+      </span>
+    );
   };
 
   const timeTemplateTo = (rowData: any) => {
-    return <span>{formatDateWithTime(rowData.toDate)}</span>;
+    const date = new Date(rowData.endDate);
+    return (
+      <span>
+        {date.toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })}
+      </span>
+    );
   };
 
   // const leftToolbarTemplate = () => {
@@ -311,7 +363,7 @@ const LeaveRequest = () => {
   };
 
   const filteredLeaveRequests = leaveRequests.filter((leaveRequest) => {
-    const fromDate = new Date(leaveRequest.fromDate);
+    const startDate = new Date(leaveRequest.startDate);
     const today = new Date();
 
     const startOfToday = new Date(
@@ -319,18 +371,18 @@ const LeaveRequest = () => {
       today.getMonth(),
       today.getDate()
     );
-    const startOfFromDate = new Date(
-      fromDate.getFullYear(),
-      fromDate.getMonth(),
-      fromDate.getDate()
+    const startOfstartDate = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate()
     );
 
     if (tab === "Today") {
-      return startOfFromDate.getTime() === startOfToday.getTime();
+      return startOfstartDate.getTime() === startOfToday.getTime();
     } else if (tab === "Upcoming") {
-      return startOfFromDate > startOfToday;
+      return startOfstartDate > startOfToday;
     } else if (tab === "Past") {
-      return startOfFromDate < startOfToday;
+      return startOfstartDate < startOfToday;
     }
 
     return true;
@@ -357,45 +409,47 @@ const LeaveRequest = () => {
         globalFilterFields={["managerName", "leaveType", "status"]}
         emptyMessage="No leave request found."
         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        className="text-[15px] shadow-sm [&_.p-datatable-thead>tr>th]:bg-slate-300 [&_.p-datatable-tbody>tr:nth-child(even)]:bg-slate-200 
+             [&_.p-datatable-tbody>tr:nth-child(odd)]:bg-white 
+             [&_.p-datatable-tbody>tr:hover]:bg-indigo-200"
       >
+        <Column headerStyle={{ width: "3rem" }}></Column>
         <Column
-          selectionMode="multiple"
-          headerStyle={{ width: "3rem" }}
-        ></Column>
-        <Column
-          field="employeeName"
           header="Employee"
           sortable
           filter
-          filterPlaceholder="Search by name"
+          filterPlaceholder="Search by employee"
           style={{ minWidth: "14rem" }}
+          body={(rowData) => rowData?.requestedBy?.name || "-"}
         />
         <Column
-          field="fromDate"
-          header="From Date"
-          sortable
-          filter
-          filterPlaceholder="Search by name"
-          style={{ minWidth: "14rem" }}
-          body={timeTemplateFrom}
-        />
-        <Column
-          field="toDate"
-          header="To Date"
-          sortable
-          filter
-          filterPlaceholder="Search by name"
-          style={{ minWidth: "14rem" }}
-          body={timeTemplateTo}
-        />
-        <Column
-          field="leaveType"
+          field="type"
           header="Leave Type"
           sortable
           filter
           filterPlaceholder="Search by name"
           style={{ minWidth: "14rem" }}
+          body={(rowData) => rowData.type?.replaceAll("_", " ") || "-"}
         />
+        <Column
+          field="startDate"
+          header="Start Date"
+          sortable
+          filter
+          filterPlaceholder="Search by name"
+          style={{ minWidth: "16rem" }}
+          body={timeTemplateFrom}
+        />
+        <Column
+          field="endDate"
+          header="End Date"
+          sortable
+          filter
+          filterPlaceholder="Search by name"
+          style={{ minWidth: "16rem" }}
+          body={timeTemplateTo}
+        />
+
         <Column
           field="reason"
           header="Reason"
@@ -414,9 +468,16 @@ const LeaveRequest = () => {
           filter
         />
         <Column
+          header="Action"
           headerStyle={{ width: "5rem", textAlign: "center" }}
           bodyStyle={{ textAlign: "center", overflow: "visible" }}
-          body={actionBodyTemplate}
+          style={{ minWidth: "14rem" }}
+          body={(rowData) => (
+            <ActionCell
+              rowData={rowData}
+              fetchLeaveRequests={fetchLeaveRequests}
+            />
+          )}
         />
       </DataTable>
       <Modal
@@ -435,7 +496,7 @@ const LeaveRequest = () => {
           zIndex={1000}
           overlayProps={{ radius: "sm", blur: 2 }}
         />
-        <form
+        {/* <form
           onSubmit={form.onSubmit(handleSubmit)}
           className="grid grid-cols-1 gap-5"
         >
@@ -448,14 +509,14 @@ const LeaveRequest = () => {
           />
           <DateTimePicker
             minDate={new Date()}
-            {...form.getInputProps("fromDate")}
+            {...form.getInputProps("startDate")}
             withAsterisk
             label="From Date"
             placeholder="Pick date and time"
           />
           <DateTimePicker
             minDate={new Date()}
-            {...form.getInputProps("toDate")}
+            {...form.getInputProps("endDate")}
             withAsterisk
             label="To Date"
             placeholder="Pick date and time"
@@ -470,7 +531,7 @@ const LeaveRequest = () => {
           <Button type="submit" variant="filled" fullWidth>
             Submit
           </Button>
-        </form>
+        </form> */}
       </Modal>
     </div>
   );

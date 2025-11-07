@@ -1,7 +1,7 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "https://leave-management-system-8z9l.onrender.com",
 });
 
 axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {

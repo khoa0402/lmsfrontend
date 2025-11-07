@@ -14,11 +14,12 @@ const departments = [
 ];
 
 const leaveTypes = [
-  "Casual Leave",
-  "Sick Leave",
-  "Maternity Leave",
-  "Paternity Leave",
-  "Unpaid Leave",
+  { label: "Casual Leave", value: "CASUAL_LEAVE" },
+  { label: "Sick Leave", value: "SICK_LEAVE" },
+  { label: "Maternity Leave", value: "MATERNITY_LEAVE" },
+  { label: "Paternity Leave", value: "PATERNITY_LEAVE" },
+  { label: "Unpaid Leave", value: "UNPAID_LEAVE" },
+  { label: "Earned Leave", value: "EARNED_LEAVE" },
 ];
 
 export { departments, leaveTypes };

@@ -11,10 +11,10 @@ import ManagerDashboard from "../Layout/ManagerDashboard";
 import ManagerProfilePage from "../Pages/Manager/ManagerProfilePage";
 import EmployeeLeaveRequestPage from "../Pages/Employee/EmployeeLeaveRequestPage";
 import ManagerLeaveRequestPage from "../Pages/Manager/ManagerLeaveRequestPage";
-import ManagerLeaveRequestDetailsPage from "../Pages/Manager/ManagerLeaveRequestDetailsPage";
 import ManagerDashBoardPage from "../Pages/Manager/ManagerDashBoardPage";
 import ManagerEmployeePage from "../Pages/Manager/ManagerEmployeePage";
 import EmployeeManagerPage from "../Pages/Employee/EmployeeManagerPage";
+import AdminDashboardPage from "../Pages/Admin/AdminDashboardPage";
 
 const AppRoutes = () => {
   return (
@@ -29,35 +29,30 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/"
+          path="/role_admin"
           element={
             <ProtectedRoute>
               <AdminDashboard />
             </ProtectedRoute>
           }
         >
-          <Route path="/dashboard" element={<Random />} />
-          <Route path="/departments" element={<Random />} />
-          <Route path="/leave-requests" element={<Random />} />
-          <Route path="/employees" element={<Random />} />
-          <Route path="/view-leaves" element={<Random />} />
-          <Route path="/charts" element={<Random />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
         </Route>
         <Route
-          path="/employee"
+          path="/role_employee"
           element={
             <ProtectedRoute>
               <EmployeeDashboard />
             </ProtectedRoute>
           }
         >
-          <Route path="dashboard" element={<Random />} />
+          <Route path="dashboard" element={<EmployeeProfilePage />} />
           <Route path="profile" element={<EmployeeProfilePage />} />
           <Route path="leave-requests" element={<EmployeeLeaveRequestPage />} />
           <Route path="managers" element={<EmployeeManagerPage />} />
         </Route>
         <Route
-          path="/manager"
+          path="/role_manager"
           element={
             <ProtectedRoute>
               <ManagerDashboard />
@@ -67,10 +62,6 @@ const AppRoutes = () => {
           <Route path="dashboard" element={<ManagerDashBoardPage />} />
           <Route path="profile" element={<ManagerProfilePage />} />
           <Route path="leave-requests" element={<ManagerLeaveRequestPage />} />
-          <Route
-            path="leave-requests/:id"
-            element={<ManagerLeaveRequestDetailsPage />}
-          />
           <Route path="employees" element={<ManagerEmployeePage />} />
         </Route>
       </Routes>

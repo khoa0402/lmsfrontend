@@ -1,63 +1,59 @@
 import axiosInstance from "../Interceptor/AxiosInterceptor";
 
-const getNotificationsByUser = async (
-  recipientId: number | string,
-  role: "MANAGER" | "EMPLOYEE"
-) => {
-  const url =
-    role === "MANAGER"
-      ? `/notifications/manager/${recipientId}`
-      : `/notifications/employee/${recipientId}`;
-
+const getNotifications = async () => {
   return axiosInstance
-    .get(url)
-    .then((response: any) => response.data)
-    .catch((error: any) => {
-      console.error("Error fetching notifications", error);
-      throw error;
-    });
-};
-
-const getUnreadCount = async (recipientId: number | string) => {
-  return axiosInstance
-    .get(`/notifications/user/${recipientId}/unread-count`)
+    .get("/notifications")
     .then((response: any) => response.data)
     .catch((error: any) => {
       throw error;
     });
 };
 
-const markNotificationAsRead = async (notificationId: number | string) => {
-  return axiosInstance
-    .put(`/notifications/read/${notificationId}`)
-    .then((response: any) => response.data)
-    .catch((error: any) => {
-      throw error;
-    });
+// const getUnreadCount = async (recipientId: number | string) => {
+//   return axiosInstance
+//     .get(`/notifications/user/${recipientId}/unread-count`)
+//     .then((response: any) => response.data)
+//     .catch((error: any) => {
+//       throw error;
+//     });
+// };
+
+const markNotificationAsRead = async (notificationIds?: string[]) => {
+  try {
+    const body =
+      notificationIds && notificationIds.length > 0 ? { notificationIds } : {};
+    const response = await axiosInstance.post(
+      "/notifications/mark-as-read",
+      body
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
 };
 
-const markAllAsRead = async (recipientId: number | string) => {
-  return axiosInstance
-    .put(`/notifications/read-all/${recipientId}`)
-    .then((response: any) => response.data)
-    .catch((error: any) => {
-      throw error;
-    });
-};
+// const markAllAsRead = async (recipientId: number | string) => {
+//   return axiosInstance
+//     .put(`/notifications/read-all/${recipientId}`)
+//     .then((response: any) => response.data)
+//     .catch((error: any) => {
+//       throw error;
+//     });
+// };
 
-const createNotification = async (notification: any) => {
-  return axiosInstance
-    .post("/notifications", notification)
-    .then((response: any) => response.data)
-    .catch((error: any) => {
-      throw error;
-    });
-};
+// const createNotification = async (notification: any) => {
+//   return axiosInstance
+//     .post("/notifications", notification)
+//     .then((response: any) => response.data)
+//     .catch((error: any) => {
+//       throw error;
+//     });
+// };
 
 export {
-  getNotificationsByUser,
-  getUnreadCount,
+  getNotifications,
+  // getUnreadCount,
   markNotificationAsRead,
-  markAllAsRead,
-  createNotification,
+  // markAllAsRead,
+  // createNotification,
 };

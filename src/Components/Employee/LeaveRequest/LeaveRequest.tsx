@@ -31,7 +31,6 @@ import {
   successNotification,
 } from "../../../Utility/NotificationUtil";
 import {
-  cancelLeaveRequest,
   getLeaveRequestByEmployee,
   scheduleLeaveRequest,
 } from "../../../Service/LeaveRequestService";
@@ -83,7 +82,7 @@ const LeaveRequest = () => {
   };
 
   const fetchLeaveRequests = () => {
-    getLeaveRequestByEmployee(user.profileId)
+    getLeaveRequestByEmployee()
       .then((data) => {
         console.log("Leave request API data:", data);
         setLeaveRequests(getCustomers(data));
@@ -95,36 +94,37 @@ const LeaveRequest = () => {
   };
 
   useEffect(() => {
+    const fetchLeaveRequests = () => {
+      getLeaveRequestByEmployee()
+        .then((data) => {
+          const customers = getCustomers(data);
+          const sorted = customers.sort(
+            (a, b) =>
+              new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+          );
+          setLeaveRequests(sorted);
+        })
+        .catch((error) => {
+          errorNotification("Failed to fetch leave requests.");
+          console.error("Error fetching leave requests:", error);
+        });
+    };
+
     fetchLeaveRequests();
-    getManagerDropdowns()
-      .then(async (data) => {
-        let currentManagerId: string | number | null = null;
 
-        // Lấy thông tin employee của user để biết managerId
-        const employee = await getEmployee(user.profileId);
-        currentManagerId = employee.managerId;
+    //Polling mỗi 10 giây
+    const interval = setInterval(fetchLeaveRequests, 10000);
 
-        setManagers(
-          data.map((manager: any) => ({
-            value: manager.id.toString(),
-            label:
-              manager.id.toString() === currentManagerId?.toString()
-                ? `${manager.name} (Your Manager)`
-                : manager.name,
-          }))
-        );
-      })
-      .catch((error) => {
-        console.error("Error fetching managers", error);
-      });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => clearInterval(interval);
+  }, []);
 
-  const getCustomers = (data: any) => {
-    return [...(data || [])].map((d) => {
-      d.date = new Date(d.date);
-
-      return d;
-    });
+  const getCustomers = (data: any[]) => {
+    if (!data) return [];
+    return data.map((d) => ({
+      ...d,
+      startDate: new Date(d.startDate),
+      endDate: new Date(d.endDate),
+    }));
   };
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,20 +139,18 @@ const LeaveRequest = () => {
 
   const form = useForm({
     initialValues: {
-      managerId: "",
       employeeId: user.profileId,
-      fromDate: new Date(),
-      toDate: new Date(),
-      leaveType: "",
+      startDate: new Date(),
+      endDate: new Date(),
+      type: "",
       reason: "",
     },
 
     validate: {
-      managerId: (value: any) => (!value ? "Manager is required" : undefined),
-      fromDate: (value: any) => (!value ? "From Date is required" : undefined),
-      toDate: (value: any) => (!value ? "To Date is required" : undefined),
-      leaveType: (value: any) =>
-        !value ? "Leave Type is required" : undefined,
+      startDate: (value: any) =>
+        !value ? "Start Date is required" : undefined,
+      endDate: (value: any) => (!value ? "End Date is required" : undefined),
+      type: (value: any) => (!value ? "Leave Type is required" : undefined),
       reason: (value: any) => (!value ? "Reason is required" : undefined),
     },
   });
@@ -224,9 +222,10 @@ const LeaveRequest = () => {
 
   const handleSubmit = (values: any) => {
     const payload = {
-      ...values,
-      fromDate: new Date(values.fromDate).toISOString(),
-      toDate: new Date(values.toDate).toISOString(),
+      leaveType: values.type,
+      startDate: new Date(values.startDate).toISOString(),
+      endDate: new Date(values.endDate).toISOString(),
+      reason: values.reason,
     };
     console.log("Schedule Leave Request with values:", payload);
     setLoading(true);
@@ -247,11 +246,31 @@ const LeaveRequest = () => {
   };
 
   const timeTemplateFrom = (rowData: any) => {
-    return <span>{formatDateWithTime(rowData.fromDate)}</span>;
+    const date = new Date(rowData.startDate);
+    return (
+      <span>
+        {date.toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })}
+      </span>
+    );
   };
 
   const timeTemplateTo = (rowData: any) => {
-    return <span>{formatDateWithTime(rowData.toDate)}</span>;
+    const date = new Date(rowData.endDate);
+    return (
+      <span>
+        {date.toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })}
+      </span>
+    );
   };
 
   const leftToolbarTemplate = () => {
@@ -287,7 +306,7 @@ const LeaveRequest = () => {
   };
 
   const filteredLeaveRequests = leaveRequests.filter((leaveRequest) => {
-    const fromDate = new Date(leaveRequest.fromDate);
+    const startDate = new Date(leaveRequest.startDate);
     const today = new Date();
 
     const startOfToday = new Date(
@@ -295,18 +314,18 @@ const LeaveRequest = () => {
       today.getMonth(),
       today.getDate()
     );
-    const startOfFromDate = new Date(
-      fromDate.getFullYear(),
-      fromDate.getMonth(),
-      fromDate.getDate()
+    const startOfstartDate = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate()
     );
 
     if (tab === "Today") {
-      return startOfFromDate.getTime() === startOfToday.getTime();
+      return startOfstartDate.getTime() === startOfToday.getTime();
     } else if (tab === "Upcoming") {
-      return startOfFromDate > startOfToday;
+      return startOfstartDate > startOfToday;
     } else if (tab === "Past") {
-      return startOfFromDate < startOfToday;
+      return startOfstartDate < startOfToday;
     }
 
     return true;
@@ -331,47 +350,40 @@ const LeaveRequest = () => {
         dataKey="id"
         filters={filters}
         filterDisplay="menu"
-        globalFilterFields={["managerName", "leaveType", "status"]}
+        globalFilterFields={["type", "status"]}
         emptyMessage="No leave request found."
         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        className="text-[15px] shadow-sm [&_.p-datatable-thead>tr>th]:bg-slate-300 [&_.p-datatable-tbody>tr:nth-child(even)]:bg-slate-200 
+             [&_.p-datatable-tbody>tr:nth-child(odd)]:bg-white 
+             [&_.p-datatable-tbody>tr:hover]:bg-indigo-200"
       >
+        <Column headerStyle={{ width: "3rem" }}></Column>
         <Column
-          selectionMode="multiple"
-          headerStyle={{ width: "3rem" }}
-        ></Column>
-        <Column
-          field="managerName"
-          header="Manager"
-          sortable
-          filter
-          filterPlaceholder="Search by name"
-          style={{ minWidth: "14rem" }}
-        />
-        <Column
-          field="fromDate"
-          header="From Date"
-          sortable
-          filter
-          filterPlaceholder="Search by name"
-          style={{ minWidth: "14rem" }}
-          body={timeTemplateFrom}
-        />
-        <Column
-          field="toDate"
-          header="To Date"
-          sortable
-          filter
-          filterPlaceholder="Search by name"
-          style={{ minWidth: "14rem" }}
-          body={timeTemplateTo}
-        />
-        <Column
-          field="leaveType"
+          field="type"
           header="Leave Type"
           sortable
           filter
           filterPlaceholder="Search by name"
           style={{ minWidth: "14rem" }}
+          body={(rowData) => rowData.type?.replaceAll("_", " ") || "-"}
+        />
+        <Column
+          field="startDate"
+          header="Start Date"
+          sortable
+          filter
+          filterPlaceholder="Search by name"
+          style={{ minWidth: "16rem" }}
+          body={timeTemplateFrom}
+        />
+        <Column
+          field="endDate"
+          header="End Date"
+          sortable
+          filter
+          filterPlaceholder="Search by name"
+          style={{ minWidth: "16rem" }}
+          body={timeTemplateTo}
         />
         <Column
           field="reason"
@@ -418,33 +430,27 @@ const LeaveRequest = () => {
           className="grid grid-cols-1 gap-5"
         >
           <Select
-            {...form.getInputProps("managerId")}
-            withAsterisk
-            data={managers}
-            label="Manager"
-            placeholder="Select Manager"
-          />
-          <DateTimePicker
-            minDate={new Date()}
-            {...form.getInputProps("fromDate")}
-            withAsterisk
-            label="From Date"
-            placeholder="Pick date and time"
-          />
-          <DateTimePicker
-            minDate={new Date()}
-            {...form.getInputProps("toDate")}
-            withAsterisk
-            label="To Date"
-            placeholder="Pick date and time"
-          />
-          <Select
-            {...form.getInputProps("leaveType")}
+            {...form.getInputProps("type")}
             withAsterisk
             data={leaveTypes}
             label="Leave Type"
             placeholder="Select Leave Type"
           />
+          <DateTimePicker
+            minDate={new Date()}
+            {...form.getInputProps("startDate")}
+            withAsterisk
+            label="Start Date"
+            placeholder="Pick date and time"
+          />
+          <DateTimePicker
+            minDate={new Date()}
+            {...form.getInputProps("endDate")}
+            withAsterisk
+            label="End Date"
+            placeholder="Pick date and time"
+          />
+
           <Textarea
             {...form.getInputProps("reason")}
             withAsterisk

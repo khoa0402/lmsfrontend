@@ -2,216 +2,144 @@ import {
   Avatar,
   Button,
   Divider,
-  Modal,
-  NumberInput,
-  Select,
   Table,
-  TextInput,
+  Card,
+  Group,
+  Text,
+  Badge,
+  ScrollArea,
 } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
-import { useDisclosure } from "@mantine/hooks";
 import { IconEdit } from "@tabler/icons-react";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { departments } from "../../../Data/DropdownData";
-import {
-  getManager,
-  updateManager,
-} from "../../../Service/ManagerProfileService";
-import { formatDate } from "../../../Utility/DateUtility";
-import { useForm } from "@mantine/form";
-import {
-  errorNotification,
-  successNotification,
-} from "../../../Utility/NotificationUtil";
+import { getManager } from "../../../Service/ManagerProfileService";
 
 const Profile = () => {
   const user = useSelector((state: any) => state.user);
-  const [opened, { open, close }] = useDisclosure(false);
-  const [editMode, setEdit] = useState(false);
   const [profile, setProfile] = useState<any>({});
+
   useEffect(() => {
-    getManager(user.profileId)
-      .then((data) => {
-        setProfile({ ...data });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [user.profileId]);
-  const form = useForm({
-    initialValues: {
-      dob: "",
-      phone: "",
-      address: "",
-      idNumber: "",
-      department: "",
-    },
-    validate: {
-      dob: (value: any) => (!value ? "Date of Birth is required" : undefined),
-      phone: (value: any) => (!value ? "Phone is required" : undefined),
-      address: (value: any) => (!value ? "Address is required" : undefined),
-      idNumber: (value: any) => (!value ? "ID Number is required" : undefined),
-      department: (value: any) =>
-        !value ? "Department is required" : undefined,
-    },
-  });
-  const handleEdit = () => {
-    form.setValues({
-      ...profile,
-      dob: profile.dob ? new Date(profile.dob) : undefined,
-    });
-    setEdit(true);
-  };
-  const handleSubmit = (e: any) => {
-    let values = form.getValues();
-    form.validate();
-    if (!form.isValid()) return;
-    updateManager({ ...profile, ...values })
-      .then((data) => {
-        successNotification("Profile updated successfully.");
-        setProfile({ ...profile, ...values });
-        setEdit(false);
-      })
-      .catch((error) => {
-        errorNotification(error.response.data.errorMessage);
-      });
-  };
+    getManager()
+      .then((data) => setProfile({ ...data }))
+      .catch((error) => console.error("Error fetching profile:", error));
+  }, []);
+
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center">
-        <div className="flex gap-5 items-center">
-          <div className="flex flex-col items-center gap-3">
+    <div className="p-8 min-h-screen bg-gray-50">
+      {/* Header */}
+      <Card
+        shadow="sm"
+        radius="lg"
+        className="p-8 mb-10 bg-white border border-gray-100"
+      >
+        <Group justify="space-between" align="center">
+          <Group gap="lg">
             <Avatar
               variant="filled"
               src="/download.jpg"
               size={120}
-              alt="it's me"
+              alt="avatar"
+              radius="xl"
             />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-neutral-900">
-              {user.name}
+            <div>
+              <Text size="xl" fw={700} className="text-gray-900">
+                {profile.name || "Unknown"}
+              </Text>
+              <Text size="sm" c="dimmed">
+                {profile.email || "No email"}
+              </Text>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {profile.role && (
+                  <Badge
+                    color={profile.role === "ROLE_MANAGER" ? "blue" : "gray"}
+                    variant="light"
+                    radius="sm"
+                  >
+                    {profile.role === "ROLE_MANAGER"
+                      ? "Manager"
+                      : profile.role.replace("ROLE_", "")}
+                  </Badge>
+                )}
+              </div>
             </div>
-            <div className="text-base text-neutral-700">{user.email}</div>
-          </div>
-        </div>
-        {!editMode ? (
-          <Button
-            type="button"
-            onClick={handleEdit}
-            variant="filled"
-            leftSection={<IconEdit />}
-          >
-            Edit
-          </Button>
-        ) : (
-          <Button onClick={handleSubmit} type="submit" variant="filled">
-            Submit
-          </Button>
-        )}
-      </div>
-      <Divider my="xl" />
-      <div>
-        <div className="text-2xl font-bold text-neutral-900 mb-4">
+          </Group>
+        </Group>
+      </Card>
+
+      {/* Personal Info */}
+      <Card
+        shadow="sm"
+        radius="lg"
+        className="p-8 bg-white border border-gray-100"
+      >
+        <Text size="xl" fw={700} mb="md" className="text-gray-900">
           Personal Information
-        </div>
-        <Table
-          striped
-          stripedColor="gray"
-          verticalSpacing="sm"
-          withColumnBorders={false}
-        >
-          <Table.Tbody className="[&>tr]:!mb-3 [&_td]:!w-1/2">
-            <Table.Tr>
-              <Table.Td className="font-medium text-lg">
-                Date of Birth:
-              </Table.Td>
-              {editMode ? (
-                <Table.Td className="text-lg">
-                  <DateInput
-                    {...form.getInputProps("dob")}
-                    placeholder="Date of Birth"
-                  />
+        </Text>
+
+        <Divider my="sm" />
+
+        <ScrollArea>
+          <Table
+            verticalSpacing="md"
+            highlightOnHover
+            withColumnBorders={false}
+          >
+            <colgroup>
+              <col style={{ width: "55%" }} />
+              <col style={{ width: "45%" }} />
+            </colgroup>
+            <Table.Tbody>
+              <Table.Tr>
+                <Table.Td className="font-medium text-gray-600 text-base">
+                  Name
                 </Table.Td>
-              ) : (
-                <Table.Td className="text-lg">
-                  {formatDate(profile.dob) ?? "-"}
+                <Table.Td className="text-gray-800 text-base">
+                  {profile.name ?? "-"}
                 </Table.Td>
-              )}
-            </Table.Tr>
-            <Table.Tr>
-              <Table.Td className="font-medium text-lg">Phone:</Table.Td>
-              {editMode ? (
-                <Table.Td className="text-lg">
-                  <NumberInput
-                    {...form.getInputProps("phone")}
-                    maxLength={10}
-                    clampBehavior="strict"
-                    placeholder="Phone"
-                    hideControls
-                  />
+              </Table.Tr>
+
+              <Table.Tr>
+                <Table.Td className="font-medium text-gray-600 text-base">
+                  Email
                 </Table.Td>
-              ) : (
-                <Table.Td className="text-lg">{profile.phone ?? "-"}</Table.Td>
-              )}
-            </Table.Tr>
-            <Table.Tr>
-              <Table.Td className="font-medium text-lg">Address:</Table.Td>
-              {editMode ? (
-                <Table.Td className="text-lg">
-                  <TextInput
-                    {...form.getInputProps("address")}
-                    placeholder="Address"
-                  />
+                <Table.Td className="text-gray-800 text-base">
+                  {profile.email ?? "-"}
                 </Table.Td>
-              ) : (
-                <Table.Td className="text-lg">
-                  {profile.address ?? "-"}
+              </Table.Tr>
+
+              <Table.Tr>
+                <Table.Td className="font-medium text-gray-600 text-base">
+                  Title
                 </Table.Td>
-              )}
-            </Table.Tr>
-            <Table.Tr>
-              <Table.Td className="font-medium text-lg">ID Number:</Table.Td>
-              {editMode ? (
-                <Table.Td className="text-lg">
-                  <NumberInput
-                    {...form.getInputProps("idNumber")}
-                    maxLength={12}
-                    clampBehavior="strict"
-                    placeholder="ID Number"
-                    hideControls
-                  />
+                <Table.Td className="text-gray-800 text-base">
+                  {profile.title ?? "-"}
                 </Table.Td>
-              ) : (
-                <Table.Td className="text-lg">
-                  {profile.idNumber ?? "-"}
+              </Table.Tr>
+
+              <Table.Tr>
+                <Table.Td className="font-medium text-gray-600 text-base">
+                  Department
                 </Table.Td>
-              )}
-            </Table.Tr>
-            <Table.Tr>
-              <Table.Td className="font-medium text-lg">Department:</Table.Td>
-              {editMode ? (
-                <Table.Td className="text-lg">
-                  <Select
-                    {...form.getInputProps("department")}
-                    placeholder="Department"
-                    data={departments}
-                  />
-                </Table.Td>
-              ) : (
-                <Table.Td className="text-lg">
+                <Table.Td className="text-gray-800 text-base">
                   {profile.department ?? "-"}
                 </Table.Td>
-              )}
-            </Table.Tr>
-            <Table.Tr>
-              <Table.Td className="font-medium text-lg">Role:</Table.Td>
-              <Table.Td className="text-lg">{user.role}</Table.Td>
-            </Table.Tr>
-          </Table.Tbody>
-        </Table>
-      </div>
+              </Table.Tr>
+
+              <Table.Tr>
+                <Table.Td className="font-medium text-gray-600 text-base">
+                  Role
+                </Table.Td>
+                <Table.Td className="text-gray-800 text-base">
+                  {profile.role === "ROLE_MANAGER"
+                    ? "Manager"
+                    : profile.role ?? "-"}
+                </Table.Td>
+              </Table.Tr>
+            </Table.Tbody>
+          </Table>
+        </ScrollArea>
+      </Card>
     </div>
   );
 };
