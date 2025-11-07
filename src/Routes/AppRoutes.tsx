@@ -21,6 +21,14 @@ const AppRoutes = () => {
     <BrowserRouter>
       <Routes>
         <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          }
+        />
+        <Route
           path="/login"
           element={
             <PublicRoute>

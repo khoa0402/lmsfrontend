@@ -1,7 +1,7 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://leave-management-system-8z9l.onrender.com",
+  baseURL: process.env.REACT_APP_API_URL,
 });
 
 axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
