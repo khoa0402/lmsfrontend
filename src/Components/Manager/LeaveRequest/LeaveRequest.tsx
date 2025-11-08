@@ -407,7 +407,7 @@ const LeaveRequest = () => {
         dataKey="id"
         filters={filters}
         filterDisplay="menu"
-        globalFilterFields={["managerName", "leaveType", "status"]}
+        globalFilterFields={["name", "type", "status"]}
         emptyMessage="No leave request found."
         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
         className="text-[15px] shadow-sm rounded-xl overflow-hidden ml-3 mr-3 [&_.p-datatable-thead>tr>th]:bg-slate-300 [&_.p-datatable-tbody>tr:nth-child(even)]:bg-slate-200 
