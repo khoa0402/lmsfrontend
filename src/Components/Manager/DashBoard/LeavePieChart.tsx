@@ -1,4 +1,4 @@
-import { Card, Text, Group, Badge } from "@mantine/core";
+import { Card, Text, Group, Badge, Center } from "@mantine/core";
 import { PieChart } from "@mantine/charts";
 
 interface LeaveType {
@@ -29,17 +29,16 @@ const LeavePieChart = ({ data }: LeavePieChartProps) => {
   }));
 
   return (
-    <Card shadow="xs" radius="md" p="lg" withBorder style={{ maxWidth: 320 }}>
-      <Text fw={500} mb="xs" ta="center" size="sm">
+    <Card shadow="xs" radius="md" p="lg" withBorder>
+      <Text fw={500} mb="sm" ta="center" size="sm">
         Leave Type Distribution
       </Text>
-      <div
-        style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}
-      >
-        <PieChart h={200} data={chartData} withLabels withTooltip />
-      </div>
 
-      <Group justify="center" mt={0} gap={4} wrap="wrap">
+      <Center mb="xs">
+        <PieChart data={chartData} withLabels withTooltip w={220} h={220} />
+      </Center>
+
+      <Group justify="center" mt="sm" gap="xs" wrap="wrap">
         {chartData.map((item) => (
           <Badge key={item.name} color={item.color} variant="light" size="sm">
             {item.name} ({item.value})
