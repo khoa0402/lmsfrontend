@@ -85,7 +85,7 @@ const LeaveRequest = () => {
     getLeaveRequestByEmployee()
       .then((data) => {
         console.log("Leave request API data:", data);
-        setLeaveRequests(getCustomers(data));
+        setLeaveRequests(getCustomers(data.data));
       })
       .catch((error) => {
         errorNotification("Failed to fetch leave requests.");
@@ -97,7 +97,7 @@ const LeaveRequest = () => {
     const fetchLeaveRequests = () => {
       getLeaveRequestByEmployee()
         .then((data) => {
-          const customers = getCustomers(data);
+          const customers = getCustomers(data.data);
           const sorted = customers.sort(
             (a, b) =>
               new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
@@ -362,7 +362,6 @@ const LeaveRequest = () => {
           field="type"
           header="Leave Type"
           sortable
-          filter
           filterPlaceholder="Search by name"
           style={{ minWidth: "14rem" }}
           body={(rowData) => rowData.type?.replaceAll("_", " ") || "-"}
@@ -371,7 +370,6 @@ const LeaveRequest = () => {
           field="startDate"
           header="Start Date"
           sortable
-          filter
           filterPlaceholder="Search by name"
           style={{ minWidth: "16rem" }}
           body={timeTemplateFrom}
@@ -380,7 +378,6 @@ const LeaveRequest = () => {
           field="endDate"
           header="End Date"
           sortable
-          filter
           filterPlaceholder="Search by name"
           style={{ minWidth: "16rem" }}
           body={timeTemplateTo}
@@ -389,7 +386,6 @@ const LeaveRequest = () => {
           field="reason"
           header="Reason"
           sortable
-          filter
           filterPlaceholder="Search by reason"
           style={{ minWidth: "16rem" }}
         />
@@ -400,7 +396,6 @@ const LeaveRequest = () => {
           filterMenuStyle={{ width: "14rem" }}
           style={{ minWidth: "12rem" }}
           body={statusBodyTemplate}
-          filter
         />
 
         {/* <Column

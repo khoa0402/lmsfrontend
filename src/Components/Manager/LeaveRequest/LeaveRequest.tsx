@@ -95,7 +95,7 @@ const LeaveRequest = () => {
     getLeaveRequestByManager()
       .then((data) => {
         console.log("Leave request API data:", data);
-        setLeaveRequests(getCustomers(data));
+        setLeaveRequests(getCustomers(data.data));
       })
       .catch((error) => {
         errorNotification("Failed to fetch leave requests.");
@@ -120,12 +120,13 @@ const LeaveRequest = () => {
       });
   }, []);
 
-  const getCustomers = (data: any) => {
-    return [...(data || [])].map((d) => {
-      d.date = new Date(d.date);
-
-      return d;
-    });
+  const getCustomers = (data: any[]) => {
+    if (!data) return [];
+    return data.map((d) => ({
+      ...d,
+      startDate: new Date(d.startDate),
+      endDate: new Date(d.endDate),
+    }));
   };
 
   const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -417,7 +418,6 @@ const LeaveRequest = () => {
         <Column
           header="Employee"
           sortable
-          filter
           filterPlaceholder="Search by employee"
           style={{ minWidth: "14rem" }}
           body={(rowData) => rowData?.requestedBy?.name || "-"}
@@ -426,7 +426,6 @@ const LeaveRequest = () => {
           field="type"
           header="Leave Type"
           sortable
-          filter
           filterPlaceholder="Search by name"
           style={{ minWidth: "14rem" }}
           body={(rowData) => rowData.type?.replaceAll("_", " ") || "-"}
@@ -435,7 +434,6 @@ const LeaveRequest = () => {
           field="startDate"
           header="Start Date"
           sortable
-          filter
           filterPlaceholder="Search by name"
           style={{ minWidth: "16rem" }}
           body={timeTemplateFrom}
@@ -444,7 +442,6 @@ const LeaveRequest = () => {
           field="endDate"
           header="End Date"
           sortable
-          filter
           filterPlaceholder="Search by name"
           style={{ minWidth: "16rem" }}
           body={timeTemplateTo}
@@ -454,7 +451,6 @@ const LeaveRequest = () => {
           field="reason"
           header="Reason"
           sortable
-          filter
           filterPlaceholder="Search by reason"
           style={{ minWidth: "16rem" }}
         />
@@ -465,7 +461,6 @@ const LeaveRequest = () => {
           filterMenuStyle={{ width: "14rem" }}
           style={{ minWidth: "12rem" }}
           body={statusBodyTemplate}
-          filter
         />
         <Column
           header="Action"
